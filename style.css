@@ -49,11 +49,6 @@
     outline-offset: -2px;
 }
 
-/* 欄作為 drop 目標時的高亮（拖到空白處） */
-.ext-panel-col-drag-over {
-    outline: 2px dashed var(--SmartThemeBodyColor, rgba(255,255,255,0.4));
-    outline-offset: -4px;
-}
 
 /* 編輯模式下條目可拖拽 */
 .ext-panel-editing .extension_container,
