@@ -13,12 +13,21 @@
     display: none !important;
 }
 
-/* 子 drawer 的跟隨提示 */
+/* 編輯模式：右欄 header 改成 flex-start，讓 ◀ 和 ☑ 貼在一起 */
+.ext-panel-editing #extensions_settings2 .inline-drawer-header {
+    justify-content: flex-start !important;
+    gap: 6px;
+}
+
+/* 編輯模式：左欄 header 也加 gap */
+.ext-panel-editing #extensions_settings .inline-drawer-header {
+    gap: 6px;
+}
+
+/* 子 drawer 的跟隨提示：接在標題後 */
 .ext-panel-sub-note {
-    font-size: 10px;
-    opacity: 0.5;
-    margin-left: 6px;
-    white-space: nowrap;
+    opacity: 0.6;
+    margin-left: 4px;
     pointer-events: none;
 }
 

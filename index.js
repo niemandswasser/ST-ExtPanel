@@ -155,17 +155,28 @@ function enterEditMode() {
         // 移動按鈕
         attachMoveBtn(container, header);
 
-        // 子 drawer 加上「跟隨父容器」提示（含父容器名稱）
+        // 子 drawer：攔截原生點擊 + 在標題後面加提示文字
         const parentName = getHeaderName(header);
         container.querySelectorAll('.inline-drawer-header').forEach(subHeader => {
             if (subHeader === header) return;
+
+            // 攔截子 drawer 的展開/收合
+            subHeader.addEventListener('click', blockHeaderClick, true);
+            blockedHeaders.set(subHeader, blockHeaderClick);
+
             if (subHeader.querySelector('.ext-panel-sub-note')) return;
-            const note = document.createElement('small');
-            note.className = 'ext-panel-sub-note';
-            note.textContent = parentName
+            const titleEl = subHeader.querySelector('b, span[data-i18n]');
+            const noteText = parentName
                 ? `（此條目跟隨${parentName} 顯示/隱藏）`
                 : '（跟隨父容器顯示/隱藏）';
-            subHeader.appendChild(note);
+            const note = document.createElement('span');
+            note.className = 'ext-panel-sub-note';
+            note.textContent = noteText;
+            if (titleEl) {
+                titleEl.insertAdjacentElement('afterend', note);
+            } else {
+                subHeader.appendChild(note);
+            }
         });
 
         // 拖拽排序
