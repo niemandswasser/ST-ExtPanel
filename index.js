@@ -91,10 +91,25 @@ function takeSnapshot() {
     return { hidden, order };
 }
 
+function collapseAllDrawers() {
+    document.querySelectorAll('#extensions_settings .inline-drawer-content, #extensions_settings2 .inline-drawer-content').forEach(content => {
+        if (content.style.display === 'none') return;
+        content.style.display = 'none';
+        const icon = content.previousElementSibling?.querySelector('.inline-drawer-icon');
+        if (icon) {
+            icon.classList.remove('up', 'fa-circle-chevron-up');
+            icon.classList.add('down', 'fa-circle-chevron-down');
+        }
+    });
+}
+
 function enterEditMode() {
     if (isEditing) return;
     isEditing = true;
     snapshot = takeSnapshot();
+
+    collapseAllDrawers();
+    document.getElementById('rm_extensions_block')?.classList.add('ext-panel-editing');
 
     getManagedItems().forEach(container => {
         if (!container.id) return;
@@ -259,6 +274,8 @@ function cancelEditMode() {
 }
 
 function cleanupEditUI() {
+    document.getElementById('rm_extensions_block')?.classList.remove('ext-panel-editing');
+
     // 解除事件攔截
     blockedHeaders.forEach((listener, header) => {
         header.removeEventListener('click', listener, true);

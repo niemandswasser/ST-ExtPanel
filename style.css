@@ -8,6 +8,11 @@
     background: var(--active-item-bg, rgba(74, 158, 255, 0.2));
 }
 
+/* 編輯模式：隱藏所有摺疊箭頭 */
+.ext-panel-editing .inline-drawer-icon {
+    display: none !important;
+}
+
 /* 勾選框：插在 inline-drawer-header 第一個位置 */
 .ext-panel-checkbox {
     width: 15px;
