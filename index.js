@@ -54,12 +54,18 @@ function applyStoredState() {
     const col2 = document.getElementById('extensions_settings2');
     if (!col1 || !col2) return;
 
-    if (stored.hidden?.length) {
-        stored.hidden.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) { el.classList.add('ext-panel-hidden'); el.style.display = 'none'; }
-        });
+    getManagedItems(); // 確保現有元素已分配 ID
+
+    const hiddenSet = new Set(stored.hidden || []);
+
+    function applyHiddenIfNeeded(el) {
+        if (el.id && hiddenSet.has(el.id) && !el.classList.contains('ext-panel-hidden')) {
+            el.classList.add('ext-panel-hidden');
+            el.style.display = 'none';
+        }
     }
+
+    getManagedItems().forEach(applyHiddenIfNeeded);
 
     if (stored.order?.length) {
         stored.order.forEach(({ id, col }) => {
@@ -68,6 +74,14 @@ function applyStoredState() {
             (col === 2 ? col2 : col1).appendChild(el);
         });
     }
+
+    // 監聽非同步載入的面板，補套隱藏狀態
+    const lateObserver = new MutationObserver(() => {
+        getManagedItems().forEach(applyHiddenIfNeeded);
+    });
+    lateObserver.observe(col1, { childList: true });
+    lateObserver.observe(col2, { childList: true });
+    setTimeout(() => lateObserver.disconnect(), 15000);
 }
 
 // ===== 編輯模式 =====
