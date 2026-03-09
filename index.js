@@ -54,18 +54,18 @@ function applyStoredState() {
     const col2 = document.getElementById('extensions_settings2');
     if (!col1 || !col2) return;
 
-    const items = getManagedItems(); // 確保所有元素已分配 ID
-    console.log('[ExtPanel] applyStoredState 執行，已找到', items.length, '個面板');
-    console.log('[ExtPanel] 儲存的 hidden:', stored.hidden);
-    console.log('[ExtPanel] 面板 IDs:', items.map(el => el.id));
+    getManagedItems(); // 確保現有元素已分配 ID
 
-    if (stored.hidden?.length) {
-        stored.hidden.forEach(id => {
-            const el = document.getElementById(id);
-            console.log('[ExtPanel] 嘗試隱藏', id, '→', el ? '找到，套用隱藏' : '找不到元素');
-            if (el) { el.classList.add('ext-panel-hidden'); el.style.display = 'none'; }
-        });
+    const hiddenSet = new Set(stored.hidden || []);
+
+    function applyHiddenIfNeeded(el) {
+        if (el.id && hiddenSet.has(el.id) && !el.classList.contains('ext-panel-hidden')) {
+            el.classList.add('ext-panel-hidden');
+            el.style.display = 'none';
+        }
     }
+
+    getManagedItems().forEach(applyHiddenIfNeeded);
 
     if (stored.order?.length) {
         stored.order.forEach(({ id, col }) => {
@@ -74,6 +74,14 @@ function applyStoredState() {
             (col === 2 ? col2 : col1).appendChild(el);
         });
     }
+
+    // 監聽非同步載入的面板，補套隱藏狀態
+    const lateObserver = new MutationObserver(() => {
+        getManagedItems().forEach(applyHiddenIfNeeded);
+    });
+    lateObserver.observe(col1, { childList: true });
+    lateObserver.observe(col2, { childList: true });
+    setTimeout(() => lateObserver.disconnect(), 15000);
 }
 
 // ===== 編輯模式 =====
