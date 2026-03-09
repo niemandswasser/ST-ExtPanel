@@ -77,6 +77,7 @@ const blockedHeaders = new Map();
 
 // 拖拽狀態
 let dragSrc = null;
+const headerDragHandlers = new Map();
 
 function blockHeaderClick(e) {
     if (!e.target.closest('.ext-panel-checkbox, .ext-panel-move-btn')) {
@@ -218,6 +219,29 @@ function setupDrag(container) {
     container.addEventListener('dragover', onDragOver);
     container.addEventListener('dragleave', onDragLeave);
     container.addEventListener('drop', onDrop);
+
+    // 若 container 有 header，讓 header 也可拖拽並轉發至 container
+    // 避免 header 內的 input/button 吸收 mousedown 而使 container 拖不起來
+    const header = getTopHeader(container);
+    if (header) {
+        const onHeaderDragStart = (e) => {
+            e.stopPropagation();
+            dragSrc = container;
+            container.classList.add('ext-panel-dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', container.id);
+        };
+        const onHeaderDragEnd = (e) => {
+            e.stopPropagation();
+            container.classList.remove('ext-panel-dragging');
+            document.querySelectorAll('.ext-panel-drag-over').forEach(el => el.classList.remove('ext-panel-drag-over'));
+            dragSrc = null;
+        };
+        header.draggable = true;
+        header.addEventListener('dragstart', onHeaderDragStart);
+        header.addEventListener('dragend', onHeaderDragEnd);
+        headerDragHandlers.set(header, { onHeaderDragStart, onHeaderDragEnd });
+    }
 }
 
 function teardownDrag(container) {
@@ -228,6 +252,17 @@ function teardownDrag(container) {
     container.removeEventListener('dragleave', onDragLeave);
     container.removeEventListener('drop', onDrop);
     container.classList.remove('ext-panel-drag-over');
+
+    const header = getTopHeader(container);
+    if (header) {
+        const handlers = headerDragHandlers.get(header);
+        if (handlers) {
+            header.draggable = false;
+            header.removeEventListener('dragstart', handlers.onHeaderDragStart);
+            header.removeEventListener('dragend', handlers.onHeaderDragEnd);
+            headerDragHandlers.delete(header);
+        }
+    }
 }
 
 function onDragStart(e) {
