@@ -17,7 +17,6 @@ function saveState(s) {
 }
 
 // ===== 取得管理對象 =====
-// 「管理項目」= 兩欄直接子元素中，含有 inline-drawer-header 的那些
 let autoIdSeq = 0;
 
 function getManagedItems() {
@@ -35,9 +34,13 @@ function getManagedItems() {
     return items;
 }
 
-// 取得容器的頂層 header
 function getTopHeader(container) {
     return container.querySelector('.inline-drawer-header');
+}
+
+// 取得 header 的顯示名稱
+function getHeaderName(header) {
+    return header?.querySelector('b, span[data-i18n]')?.textContent?.trim() || '';
 }
 
 function isInRightCol(container) {
@@ -70,7 +73,10 @@ function applyStoredState() {
 // ===== 編輯模式 =====
 let isEditing = false;
 let snapshot = null;
-const blockedHeaders = new Map(); // header -> listener
+const blockedHeaders = new Map();
+
+// 拖拽狀態
+let dragSrc = null;
 
 function blockHeaderClick(e) {
     if (!e.target.closest('.ext-panel-checkbox, .ext-panel-move-btn')) {
@@ -146,18 +152,24 @@ function enterEditMode() {
         };
         header.insertBefore(checkbox, header.firstChild);
 
-        // 移動按鈕（依目前所在欄位）
+        // 移動按鈕
         attachMoveBtn(container, header);
 
-        // 子 drawer 加上「跟隨父容器」提示
+        // 子 drawer 加上「跟隨父容器」提示（含父容器名稱）
+        const parentName = getHeaderName(header);
         container.querySelectorAll('.inline-drawer-header').forEach(subHeader => {
             if (subHeader === header) return;
             if (subHeader.querySelector('.ext-panel-sub-note')) return;
             const note = document.createElement('small');
             note.className = 'ext-panel-sub-note';
-            note.textContent = '（跟隨父容器顯示/隱藏）';
+            note.textContent = parentName
+                ? `（此條目跟隨${parentName} 顯示/隱藏）`
+                : '（跟隨父容器顯示/隱藏）';
             subHeader.appendChild(note);
         });
+
+        // 拖拽排序
+        setupDrag(container);
     });
 
     // 浮動確認面板
@@ -181,7 +193,69 @@ function enterEditMode() {
     updateManageBtn(true);
 }
 
-// 依容器目前所在欄位加上對應方向鍵
+// ===== 拖拽邏輯 =====
+function setupDrag(container) {
+    container.draggable = true;
+
+    container.addEventListener('dragstart', onDragStart);
+    container.addEventListener('dragend', onDragEnd);
+    container.addEventListener('dragover', onDragOver);
+    container.addEventListener('dragleave', onDragLeave);
+    container.addEventListener('drop', onDrop);
+}
+
+function teardownDrag(container) {
+    container.draggable = false;
+    container.removeEventListener('dragstart', onDragStart);
+    container.removeEventListener('dragend', onDragEnd);
+    container.removeEventListener('dragover', onDragOver);
+    container.removeEventListener('dragleave', onDragLeave);
+    container.removeEventListener('drop', onDrop);
+    container.classList.remove('ext-panel-drag-over');
+}
+
+function onDragStart(e) {
+    dragSrc = this;
+    this.classList.add('ext-panel-dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', this.id);
+}
+
+function onDragEnd() {
+    this.classList.remove('ext-panel-dragging');
+    document.querySelectorAll('.ext-panel-drag-over').forEach(el => el.classList.remove('ext-panel-drag-over'));
+    dragSrc = null;
+}
+
+function onDragOver(e) {
+    if (!dragSrc || dragSrc === this) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    this.classList.add('ext-panel-drag-over');
+}
+
+function onDragLeave() {
+    this.classList.remove('ext-panel-drag-over');
+}
+
+function onDrop(e) {
+    e.preventDefault();
+    if (!dragSrc || dragSrc === this) return;
+    this.classList.remove('ext-panel-drag-over');
+
+    const parent = this.parentElement;
+    const allChildren = Array.from(parent.children);
+    const srcIdx = allChildren.indexOf(dragSrc);
+    const tgtIdx = allChildren.indexOf(this);
+
+    if (srcIdx < tgtIdx) {
+        parent.insertBefore(dragSrc, this.nextSibling);
+    } else {
+        parent.insertBefore(dragSrc, this);
+    }
+}
+
+// ===== 移動按鈕 =====
 function attachMoveBtn(container, header) {
     header.querySelectorAll('.ext-panel-move-btn').forEach(el => el.remove());
 
@@ -189,14 +263,12 @@ function attachMoveBtn(container, header) {
     const col2 = document.getElementById('extensions_settings2');
 
     if (isInRightCol(container)) {
-        // 在右欄 → ◀ 加到最後
         const btn = makeMoveBtn('◀', '移到左欄', () => {
             col1.appendChild(container);
             attachMoveBtn(container, header);
         });
         header.appendChild(btn);
     } else {
-        // 在左欄 → ▶ 加到最後
         const btn = makeMoveBtn('▶', '移到右欄', () => {
             col2.appendChild(container);
             attachMoveBtn(container, header);
@@ -286,18 +358,19 @@ function cancelEditMode() {
 function cleanupEditUI() {
     document.getElementById('rm_extensions_block')?.classList.remove('ext-panel-editing');
 
-    // 解除事件攔截
     blockedHeaders.forEach((listener, header) => {
         header.removeEventListener('click', listener, true);
     });
     blockedHeaders.clear();
+
+    // 移除拖拽
+    getManagedItems().forEach(container => teardownDrag(container));
 
     document.querySelectorAll('.ext-panel-checkbox').forEach(el => el.remove());
     document.querySelectorAll('.ext-panel-move-btn').forEach(el => el.remove());
     document.querySelectorAll('.ext-panel-sub-note').forEach(el => el.remove());
     document.getElementById('ext-panel-float-wrapper')?.remove();
 
-    // 隱藏中的容器回到不可見
     getManagedItems().forEach(container => {
         if (container.classList.contains('ext-panel-hidden')) {
             container.style.display = 'none';
