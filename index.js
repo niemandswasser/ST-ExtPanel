@@ -421,7 +421,7 @@ function cancelEditMode() {
     }
 
     updateManageBtn(false);
-    toastr?.info('Отменено, восстановлено до изменений');
+    toastr?.info('Отменено, возвращаем как было');
 }
 
 function cleanupEditUI() {
@@ -487,3 +487,4 @@ if (document.getElementById('extensions_settings') && document.getElementById('t
     });
     observer.observe(document.body, { childList: true, subtree: true });
 }
+
