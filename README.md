@@ -1,39 +1,43 @@
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-
-[中文 (繁體)](README.zh-TW.md)
+[Оригинальный редми на китайском](README.zh-TW.md)
 
 ---
 
-# Extension Panel Manager for SillyTavern
+# Extension Panel Manager для SillyTavern
 
-A SillyTavern extension that lets you customize the Extensions settings page — hide panels you don't use, reorder them, and move them between columns. Settings are saved automatically and restored on every page load.
+> **Оригинальное расширение:** [lilminzyu/ST-ExtPanel](https://github.com/lilminzyu/ST-ExtPanel) — автор [lilminzyu](https://github.com/lilminzyu).
+> Этот форк представляет собой простой перевод интерфейса расширения на русский язык.
 
-## Key Features
+---
 
-- **Show / Hide Panels**: Toggle visibility of any extension panel with a checkbox. Hidden panels remain installed — they just won't clutter the screen.
-- **Drag & Drop Reorder**: Drag panels to rearrange them within or across columns. Cross-column drag is fully supported.
-- **Persistent Layout**: Your layout (visibility, order, column placement) is saved to `localStorage` and applied automatically on page load.
-- **Non-destructive**: Canceling edit mode fully restores the previous state. No settings are changed until you confirm.
-- **Lightweight**: No dependencies. Integrates directly into the existing Extensions UI.
+Расширение для SillyTavern, позволяющее настроить страницу расширений - скрывать ненужные расширения, менять их порядок и перемещать между колонками. Настройки сохраняются автоматически и восстанавливаются при каждой загрузке страницы.
 
-## Usage
+## Основные возможности
 
-1. Open the **Extensions** tab in SillyTavern.
-2. Click the **管理面板** button (next to the "Install Extension" button).
-3. Edit mode activates:
-   - All panels become visible (hidden ones appear at reduced opacity).
-   - Each panel shows a **checkbox** to toggle visibility.
-   - Drag any panel by its header to reorder or move it to another column.
-4. Click the **confirm** button to save, or the **cancel** button to restore the previous layout.
+- **Показать / Скрыть панели**: скройте ненужные расширения с панели. Скрытые панели остаются установленными, вы их просто не увидите.
+- **Перетаскивание**: панели расширений можно менять местами, настройте все так, чтоб вам нравилось.
+- **Сохранение настроек**: ваша раскладка (видимость, порядок, расположение по колонкам) сохраняется в `localStorage` и применяется автоматически при загрузке страницы.
+- **Без потерь**: отмена режима редактирования полностью восстанавливает предыдущее состояние. Никакие настройки не изменяются до подтверждения.
+- **Лёгкое**: без зависимостей. Встраивается напрямую в существующий интерфейс вкладки расширений.
 
-## Installation
+## Использование
 
-1. Copy the repository URL: `https://github.com/lilminzyu/ST-ExtPanel`
-2. Open the **Extensions** tab in SillyTavern.
-3. Click **Install Extension** (top-right).
-4. Paste the URL and install.
-5. Ensure **Extension Panel Manager** is enabled in the list.
+1. Откройте вкладку **Extensions** в SillyTavern.
+2. Нажмите кнопку **Панели** (рядом с кнопкой «Install Extension»).
+3. Активируется режим редактирования:
+   - Все панели становятся видимыми (скрытые отображаются с уменьшенной прозрачностью).
+   - На каждой панели появляется **флажок** для переключения видимости.
+   - Перетащите любую панель за заголовок, чтобы изменить порядок или переместить в другую колонку.
+4. Нажмите кнопку **✓** для сохранения или **✕** для восстановления предыдущей раскладки.
 
-## License
+## Установка
 
-This project is licensed under the terms of the [LICENSE](LICENSE) file.
+1. Скопируйте URL: `https://github.com/niemandswasser/ST-ExtPanel`
+2. Откройте вкладку **Extensions** в SillyTavern.
+3. Нажмите **Install Extension** (в правом верхнем углу).
+4. Вставьте URL и установите.
+5. Убедитесь, что **Extension Panel Manager** включен.
+
+## Лицензия
+
+Проект распространяется на условиях лицензии, указанной в файле [LICENSE](LICENSE).
