@@ -1,9 +1,10 @@
 {
-    "display_name": "Extension Panel Manager",
+    "display_name": "Менеджмент расширений",
     "version": "1.0.1",
     "js": "index.js",
     "css": "style.css",
-    "author": "lilminzyu",
-    "homePage": "https://github.com/lilminzyu/ST-ExtPanel",
+    "author": "lilminzyu/niemandswasser",
+    "homePage": "https://github.com/niemandswasser/ST-ExtPanel",
     "auto_update": true
 }
+
