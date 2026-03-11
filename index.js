@@ -16,7 +16,7 @@ function saveState(s) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
 }
 
-// ===== 取得管理對象 =====
+// ===== Получение управляемых объектов =====
 let autoIdSeq = 0;
 
 function getManagedItems() {
@@ -38,7 +38,7 @@ function getTopHeader(container) {
     return container.querySelector('.inline-drawer-header');
 }
 
-// 取得 header 的顯示名稱
+// Получить отображаемое имя заголовка
 function getHeaderName(header) {
     return header?.querySelector('b, span[data-i18n]')?.textContent?.trim() || '';
 }
@@ -47,14 +47,14 @@ function isInRightCol(container) {
     return container.parentElement?.id === 'extensions_settings2';
 }
 
-// ===== 套用儲存狀態（頁面載入）=====
+// ===== Применение сохранённого состояния (загрузка страницы) =====
 function applyStoredState() {
     const stored = loadState();
     const col1 = document.getElementById('extensions_settings');
     const col2 = document.getElementById('extensions_settings2');
     if (!col1 || !col2) return;
 
-    getManagedItems(); // 確保現有元素已分配 ID
+        getManagedItems(); // Убедиться, что существующие элементы уже получили ID
 
     const hiddenSet = new Set(stored.hidden || []);
 
@@ -75,7 +75,7 @@ function applyStoredState() {
         });
     }
 
-    // 監聽非同步載入的面板，補套隱藏狀態
+    // Отслеживать асинхронно загруженные панели и применять к ним скрытие
     const lateObserver = new MutationObserver(() => {
         getManagedItems().forEach(applyHiddenIfNeeded);
     });
@@ -84,12 +84,12 @@ function applyStoredState() {
     setTimeout(() => lateObserver.disconnect(), 15000);
 }
 
-// ===== 編輯模式 =====
+// ===== Режим редактирования =====
 let isEditing = false;
 let snapshot = null;
 const blockedHeaders = new Map();
 
-// 拖拽狀態
+// Состояние перетаскивания
 let dragSrc = null;
 const headerDragHandlers = new Map();
 const colDragHandlers = new Map();
@@ -135,7 +135,7 @@ function enterEditMode() {
     getManagedItems().forEach(container => {
         if (!container.id) return;
 
-        // 顯示隱藏中的容器（半透明）
+        // Показать скрытые контейнеры (полупрозрачными)
         if (container.classList.contains('ext-panel-hidden')) {
             container.style.display = '';
             container.style.opacity = '0.4';
@@ -144,7 +144,7 @@ function enterEditMode() {
         const header = getTopHeader(container);
         if (!header || header.querySelector('.ext-panel-checkbox')) return;
 
-        // 攔截原生點擊（展開/收合）
+        // Перехватить нативный клик (раскрыть/свернуть)
         header.addEventListener('click', blockHeaderClick, true);
         blockedHeaders.set(header, blockHeaderClick);
 
@@ -153,7 +153,7 @@ function enterEditMode() {
         checkbox.type = 'checkbox';
         checkbox.className = 'ext-panel-checkbox';
         checkbox.checked = !container.classList.contains('ext-panel-hidden');
-        checkbox.title = '顯示此面板';
+        checkbox.title = 'Показать эту панель';
         checkbox.onclick = e => e.stopPropagation();
         checkbox.onchange = () => {
             if (checkbox.checked) {
@@ -167,20 +167,20 @@ function enterEditMode() {
         };
         header.insertBefore(checkbox, header.firstChild);
 
-        // 子 drawer：攔截原生點擊 + 在標題後面加提示文字
+        // Дочерние drawer: перехватить клики + добавить подсказку после заголовка
         const parentName = getHeaderName(header);
         container.querySelectorAll('.inline-drawer-header').forEach(subHeader => {
             if (subHeader === header) return;
 
-            // 攔截子 drawer 的展開/收合
+            // Перехватить раскрытие/сворачивание дочерних drawer
             subHeader.addEventListener('click', blockHeaderClick, true);
             blockedHeaders.set(subHeader, blockHeaderClick);
 
             if (subHeader.querySelector('.ext-panel-sub-note')) return;
             const titleEl = subHeader.querySelector('b, span[data-i18n]');
             const noteText = parentName
-                ? `（此條目跟隨${parentName} 顯示/隱藏）`
-                : '（跟隨父容器顯示/隱藏）';
+                ? `(этот элемент следует за ${parentName} — показать/скрыть)`
+                : '(следует за родительским контейнером — показать/скрыть)';
             const note = document.createElement('span');
             note.className = 'ext-panel-sub-note';
             note.textContent = noteText;
@@ -193,7 +193,7 @@ function enterEditMode() {
 
     });
 
-    // 拖拽：套用到兩欄所有直接子元素（含空容器）
+    // Перетаскивание: применить ко всем прямым дочерним элементам обоих столбцов (включая пустые контейнеры)
     const cols = [document.getElementById('extensions_settings'), document.getElementById('extensions_settings2')];
     cols.forEach(col => {
         if (!col) return;
@@ -201,16 +201,16 @@ function enterEditMode() {
         setupColDrop(col);
     });
 
-    // 浮動確認面板
+    // Плавающая панель подтверждения
     const wrapper = document.createElement('div');
     wrapper.id = 'ext-panel-float-wrapper';
     wrapper.innerHTML = `
         <div id="ext-panel-float-panel">
             <span id="ext-panel-float-count"></span>
-            <div id="ext-panel-float-finish" class="menu_button menu_button_icon" title="確認">
+            <div id="ext-panel-float-finish" class="menu_button menu_button_icon" title="Применить">
                 <i class="fa-solid fa-check"></i>
             </div>
-            <div id="ext-panel-float-cancel" class="menu_button menu_button_icon" title="取消">
+            <div id="ext-panel-float-cancel" class="menu_button menu_button_icon" title="Отмена">
                 <i class="fa-solid fa-xmark"></i>
             </div>
         </div>`;
@@ -222,7 +222,7 @@ function enterEditMode() {
     updateManageBtn(true);
 }
 
-// ===== 拖拽邏輯 =====
+// ===== Логика перетаскивания =====
 function setupDrag(container) {
     container.draggable = true;
 
@@ -232,8 +232,8 @@ function setupDrag(container) {
     container.addEventListener('dragleave', onDragLeave);
     container.addEventListener('drop', onDrop);
 
-    // 若 container 有 header，讓 header 也可拖拽並轉發至 container
-    // 避免 header 內的 input/button 吸收 mousedown 而使 container 拖不起來
+    // Если у container есть header — сделать header тоже перетаскиваемым и передавать события контейнеру
+    // Чтобы input/button внутри header не перехватывали mousedown и не блокировали перетаскивание контейнера
     const header = getTopHeader(container);
     if (header) {
         const onHeaderDragStart = (e) => {
@@ -327,7 +327,7 @@ function onDragEnd() {
 function onDragOver(e) {
     if (!dragSrc || dragSrc === this) return;
     e.preventDefault();
-    e.stopPropagation(); // 避免觸發 column 層的 dragover
+    e.stopPropagation(); // Избежать срабатывания dragover на уровне столбца
     e.dataTransfer.dropEffect = 'move';
     this.classList.add('ext-panel-drag-over');
 }
@@ -340,7 +340,7 @@ function onDragLeave(e) {
 
 function onDrop(e) {
     e.preventDefault();
-    e.stopPropagation(); // 避免觸發 column 層的 drop
+    e.stopPropagation(); // Избежать срабатывания drop на уровне столбца
     if (!dragSrc || dragSrc === this) return;
     this.classList.remove('ext-panel-drag-over');
 
@@ -361,7 +361,7 @@ function updateFloatingCount() {
     if (!el) return;
     const all = getManagedItems();
     const visible = all.filter(c => !c.classList.contains('ext-panel-hidden')).length;
-    el.textContent = `顯示 ${visible} / ${all.length}`;
+    el.textContent = `Показано ${visible} / ${all.length}`;
 }
 
 function confirmEditMode() {
@@ -386,7 +386,7 @@ function confirmEditMode() {
     snapshot = null;
     cleanupEditUI();
     updateManageBtn(false);
-    toastr?.success('面板設定已儲存');
+    toastr?.success('Настройки панелей сохранены');
 }
 
 function cancelEditMode() {
@@ -421,7 +421,7 @@ function cancelEditMode() {
     }
 
     updateManageBtn(false);
-    toastr?.info('已取消，還原至修改前');
+    toastr?.info('Отменено, восстановлено до изменений');
 }
 
 function cleanupEditUI() {
@@ -432,7 +432,7 @@ function cleanupEditUI() {
     });
     blockedHeaders.clear();
 
-    // 移除拖拽（所有直接子元素）
+    // Убрать перетаскивание (все прямые дочерние элементы)
     const cols = [document.getElementById('extensions_settings'), document.getElementById('extensions_settings2')];
     cols.forEach(col => {
         if (!col) return;
@@ -456,7 +456,7 @@ function updateManageBtn(active) {
     document.getElementById('ext-panel-manage-btn')?.classList.toggle('active', active);
 }
 
-// ===== 管理按鈕 =====
+// ===== Кнопка управления =====
 function createManageButton() {
     if (document.getElementById('ext-panel-manage-btn')) return;
     const btn = document.createElement('div');
@@ -464,13 +464,13 @@ function createManageButton() {
     btn.className = 'menu_button menu_button_icon interactable';
     btn.tabIndex = 0;
     btn.setAttribute('role', 'button');
-    btn.title = '管理擴充功能面板';
-    btn.innerHTML = '<i class="fa-solid fa-table-columns"></i><span>管理面板</span>';
+    btn.title = 'Управление панелями расширений';
+    btn.innerHTML = '<i class="fa-solid fa-table-columns"></i><span>Панели</span>';
     btn.onclick = () => isEditing ? cancelEditMode() : enterEditMode();
     document.getElementById('third_party_extension_button')?.insertAdjacentElement('afterend', btn);
 }
 
-// ===== 初始化 =====
+// ===== Инициализация =====
 function initialize() {
     createManageButton();
     applyStoredState();
